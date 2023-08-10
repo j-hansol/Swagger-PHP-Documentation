@@ -11,11 +11,11 @@ PHP Swagger 정리
 소개
 ----
 
-### Swagger PHP란?
+## Swagger PHP란?
 ```Swagger PHP```는 PHP 소스 파일에서 API 메타데이터를 추출하는 라이브러리이다. 이를 위해서 응용프로그램의 관련 PHP 코드에 주석(Annotation) 또는 속성(Attribute)을 이용하여 API의 상세 내용을 추가하고 ```Swagger PHP```를 이용하여 전용 프로그램이 판독 가능한 API 문서로 변환하도록 한다. 이렇게 소스코드에 API 내용을 문서화함으로 보다 쉽게 모든 정보를 최신정보르 쉽게 반영할 수 있게된다.
 단, 속성을 사용하기 위해서는 ```PHP 8.x``` 이상이어야 한다.
 
-### 설치
+## 설치
 ```Swagger PHP```를 설치하는 방법으로 ```Composer```를 이용하여 설치하는 것을 권장한다.
 
 ```bash
@@ -32,7 +32,7 @@ composer global require zircote/swagger-php
 composer require "darkaonline/l5-swagger"
 ```
 
-### OpenAPI 문서 생성
+## OpenAPI 문서 생성
 문서를 생성하는 부분은 두 가지가 있다. 하나는 패키지를 설치할 때 같이 설치된 ```./bin/openapi```를 이용하는 것, 그리고 두 번째는 문서화 코드를 직접 작성하여 실행하는 방법이 있다. 개인적으로는 기존 제공되는 것을 활용하는 것을 추천한다.
 
 ### ```./bin/openapi```
