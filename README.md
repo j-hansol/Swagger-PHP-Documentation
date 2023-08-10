@@ -35,7 +35,7 @@ composer require "darkaonline/l5-swagger"
 ### OpenAPI 문서 생성
 문서를 생성하는 부분은 두 가지가 있다. 하나는 패키지를 설치할 때 같이 설치된 ```./bin/openapi```를 이용하는 것, 그리고 두 번째는 문서화 코드를 직접 작성하여 실행하는 방법이 있다. 개인적으로는 기존 제공되는 것을 활용하는 것을 추천한다.
 
-#### ```./bin/openapi```
+### ```./bin/openapi```
 ```
 ./vendor/bin/openapi app -o openapi.yaml
 ```
@@ -44,3 +44,39 @@ composer require "darkaonline/l5-swagger"
 > 출력 형식은 기본적으로 ```YAML```이다. 출력형식은 ```--output``` 또는 ```-o```를 통해 파일명과 함께 확장명을 지정하여 결정할 수 있다.
 > ```---format```은 출력파일 이름과 상관없이 출력 형식을 강제할 수 있다.
 
+그 외 사용가능한 옵션을 보려면 ```--help``` 또는 ```-h```를 입력하여 확인할 수 있다.
+```
+./vendor/bin/openapi -h
+
+Usage: openapi [--option value] [/path/to/project ...]
+
+Options:
+  --config (-c)     Generator config
+                    ex: -c operationId.hash=false
+  --legacy (-l)     Use legacy TokenAnalyser; default is the new ReflectionAnalyser
+  --output (-o)     Path to store the generated documentation.
+                    ex: --output openapi.yaml
+  --exclude (-e)    Exclude path(s).
+                    ex: --exclude vendor,library/Zend
+  --pattern (-n)    Pattern of files to scan.
+                    ex: --pattern "*.php" or --pattern "/\.(phps|php)$/"
+  --bootstrap (-b)  Bootstrap a php file for defining constants, etc.
+                    ex: --bootstrap config/constants.php
+  --processor (-p)  Register an additional processor.
+  --format (-f)     Force yaml or json.
+  --debug (-d)      Show additional error information.
+  --version         The OpenAPI version; defaults to 3.0.0.
+  --help (-h)       Display this help message.
+```
+
+### PHP 코드 작성
+문서를 생성하는 코드를 직접 작성하여 사용할 수 도 있다. 아래의 코드는 가장 간단하게 별도의 옵션 없이 YAML 형식으로 생성하여 출력하는 예이다. 이를 파일로 저장하는 기능을 추가할 수도 있을 것이다.
+```
+<?php
+require("vendor/autoload.php");
+
+$openapi = \OpenApi\Generator::scan(['/path/to/project']);
+
+header('Content-Type: application/x-yaml');
+echo $openapi->toYaml();
+```
