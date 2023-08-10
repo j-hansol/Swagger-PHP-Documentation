@@ -45,7 +45,7 @@ composer require "darkaonline/l5-swagger"
 > ```---format```은 출력파일 이름과 상관없이 출력 형식을 강제할 수 있다.
 
 그 외 사용가능한 옵션을 보려면 ```--help``` 또는 ```-h```를 입력하여 확인할 수 있다.
-```
+```bash
 ./vendor/bin/openapi -h
 
 Usage: openapi [--option value] [/path/to/project ...]
@@ -71,7 +71,7 @@ Options:
 
 ### PHP 코드 작성
 문서를 생성하는 코드를 직접 작성하여 사용할 수 도 있다. 아래의 코드는 가장 간단하게 별도의 옵션 없이 YAML 형식으로 생성하여 출력하는 예이다. 이를 파일로 저장하는 기능을 추가할 수도 있을 것이다.
-```
+```php
 <?php
 require("vendor/autoload.php");
 
