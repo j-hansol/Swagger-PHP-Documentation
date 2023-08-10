@@ -31,3 +31,16 @@ composer global require zircote/swagger-php
 ```
 composer require "darkaonline/l5-swagger"
 ```
+
+### OpenAPI 문서 생성
+문서를 생성하는 부분은 두 가지가 있다. 하나는 패키지를 설치할 때 같이 설치된 ```./bin/openapi```를 이용하는 것, 그리고 두 번째는 문서화 코드를 직접 작성하여 실행하는 방법이 있다. 개인적으로는 기존 제공되는 것을 활용하는 것을 추천한다.
+
+#### ```./bin/openapi```
+```
+./vendor/bin/openapi app -o openapi.yaml
+```
+
+> ### 출력 형식
+> 출력 형식은 기본적으로 ```YAML```이다. 출력형식은 ```--output``` 또는 ```-o```를 통해 파일명과 함께 확장명을 지정하여 결정할 수 있다.
+> ```---format```은 출력파일 이름과 상관없이 출력 형식을 강제할 수 있다.
+
