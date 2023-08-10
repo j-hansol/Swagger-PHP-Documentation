@@ -1,0 +1,15 @@
+{
+    "name": "j-hansol/php-swagger-documentation",
+    "description": "Swagger PHP Dcumentation Summary",
+    "type": "library",
+    "license": "GPL",
+    "autoload": {
+        "psr-4": {
+            "JHansol\\PhpSwaggerDocumentation\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "zircote/swagger-php": "^4.0@dev"
+    }
+}
