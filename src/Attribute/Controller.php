@@ -2,7 +2,7 @@
 
 namespace JHansol\PhpSwaggerDocumentation\Attribute;
 
-use OpenApi\Attributes\OpenApi as OA;
+use OpenApi\Attributes as OA;
 
 #[OA\Tag (
     name: "controller",

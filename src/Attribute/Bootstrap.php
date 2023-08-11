@@ -1,11 +1,11 @@
 <?php
 namespace JHansol\PhpSwaggerDocumentation\Attribute;
 
-use OpenApi\Attributes\OpenApi as OA;
+use OpenApi\Attributes as OA;
 
 #[OA\Info (
-    title: "Open API Documentation",
-    version: "1.0"
+    version: "1.0",
+    title: "Open API Documentation"
 )]
 class Bootstrap {
     public function init() : void {
