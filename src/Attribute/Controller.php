@@ -2,17 +2,19 @@
 
 namespace JHansol\PhpSwaggerDocumentation\Attribute;
 
-use OpenApi\Attributes as OA;
+use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Response;
+use OpenApi\Attributes\Tag;
 
-#[OA\Tag (
+#[Tag (
     name: "controller",
     description: "기본 컨트롤러"
 )]
 class Controller {
-    #[OA\Get (
+    #[Get (
         path: "/base",
         responses: [
-            new OA\Response(response: 200, description: "요청성공")
+            new Response(response: 200, description: "요청성공")
         ]
     )]
     public function base() : string {

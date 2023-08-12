@@ -1,9 +1,9 @@
 <?php
 namespace JHansol\PhpSwaggerDocumentation\Attribute;
 
-use OpenApi\Attributes as OA;
+use OpenApi\Attributes\Info;
 
-#[OA\Info (
+#[Info (
     version: "1.0",
     title: "Open API Documentation"
 )]
