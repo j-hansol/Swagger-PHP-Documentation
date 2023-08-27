@@ -325,3 +325,72 @@ property의 유형이 객체인 경우와 같이 복잡하고 중첩된 데이�
  */
 ```
 
+```oneOf```를 이용한 응답 문서화
+------------------------------
+아래의 예는 단일 ```QualificationHolder``` 또는 목록이 포함된 응답이다.
+```php
+/**
+ * @OA\Response(
+ *     response=200,
+ *     @OA\JsonContent(
+ *         oneOf={
+ *             @OA\Schema(ref="#/components/schemas/QualificationHolder"),
+ *             @OA\Schema(
+ *                 type="array",
+ *                 @OA\Items(ref="#/components/schemas/QualificationHolder")
+ *             )
+ *         }
+ *     )
+ * )
+ */
+```
+
+응답 재사용
+----------
+전역 응답은 /components/responses가 있으며 스키마 정의(모델)와 마찬가지로 참조/공유할 수 있다.
+```php
+/**
+ * @OA\Response(
+ *   response="product",
+ *   description="All information about a product",
+ *   @OA\JsonContent(ref="#/components/schemas/Product")
+ * )
+ */
+class ProductResponse {}
+ 
+ // ...
+
+class ProductController
+{
+    /**
+     * @OA\Get(
+     *   tags={"Products"},
+     *   path="/products/{product_id}",
+     *   @OA\Response(
+     *       response="default",
+     *       ref="#/components/responses/product"
+     *   )
+     * )
+     */
+    public function getProduct($id)
+    {
+    }
+}
+```
+
+> ```response``` 매개변수는 항상 필수입니다.
+> 공유 응답 정의를 참조하는 경우에도 ```response``` 매개변수는 여전히 필요합니다.
+
+mediaType="/"
+-------------
+```*/*```를 가진 ```mediaType``` 지정은 불가능하다.
+특히 ```*/``` 주석 구문의 끝으로 분석되고 오류가 발생할 것이다. ```*```를 단독으로 사용하거나 ```application/octet-stream```을 이용해야 한다.
+
+```Multiple response with same response="200"```에 대한 경고
+-----------------------------------------------------------
+이런 일이 발생할 수 있는 두 가지 시나리오가 있다.
+
+1. 단일 엔드포인트에는 동일한 response값을 가진 두 개의 응답이 포함된다.
+2. 선언된 전역 응답이 여러 개 있습니다. 동일한 response값을 가진 두 개 이상이 있다.
+
+
