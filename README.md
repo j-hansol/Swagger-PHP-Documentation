@@ -330,7 +330,7 @@ paths:
 ===========
 
 어노테이션 배치
---------
+--------------
 모든 주석을 하나의 큰 블록 안에 배치하지 말고 관련 소스 코드에 정확하게 일치된 코드부분에 배치하는 것을 권장한다.
 
 ```swagger-php```는 프로젝트를 스켄하고 모든 위치의 데이터를 하나의 ```@OA\OpenApi``` 어노테이션으로 작성한다.
@@ -339,5 +339,318 @@ paths:
 > ```swagger-php``` v4의 모든 어노테이션 또는 속성은 반드시 ```class```, ```method```, ```parameter```, ```enum``` 등에 배치해야 한다.
 
 상황 인식
---------
+---------
+```swagger-PHP```는 주석의 컨텍스트를 살펴보고 ```property name```, ```data type``` ```description``` 등을 (doctype 및 기본 유형 힌트) 및 기타 몇 가지 사항으로 주석을 보강한다. 이는 많은 경우 모든 세부 사항을 명시적으로 문서화할 필요가 없음을 의미이기도 하다.
+
+```php
+<?php
+
+/**
+ * @OA\Schema()
+ */
+class Product {
+
+    /**
+     * The product name,
+     * @var string
+     * @OA\Property()
+     */
+    public $name;
+}
+```
+
+위 내용은 아래와 같이 생성된다.
+```yml
+openapi: 3.0.0
+components:
+  schemas:
+    Product:
+      properties:
+        name:
+          description: "The product name"
+          type: string
+      type: object
+```
+
+결국 아래와 같이 문서화한 것과 동일하다.
+```php
+    /**
+     * The product name
+     * @var string
+     *
+     * @OA\Property(
+     *   property="name",
+     *   type="string",
+     *   description="The product name"
+     * )
+     */
+    public $name;
+    ```
+
+응답 미디어 유형(Response Media Type)
+------------------------------------
+응답을 위한 미디어 타입은 ```@OA\MediaType```으로 컨텐츠를 설명한다.
+```php
+/**
+ * @OA\Response(
+ *     response=200,
+ *     description="successful operation",
+ *     @OA\MediaType(
+ *         mediaType="application/json",
+ *         @OA\Schema(ref="#/components/schemas/User"),
+ *     )
+ * ),
+ */
+```
+
+그러나 대부분의 API 요청 및 응답은 JSON이므로 ```@OA\JsonContent```를 사용하면 다음과 같이 작성하여 이를 단순화할 수 있다.
+```php
+/**
+ * @OA\Response(
+ *     response=200,
+ *     description="successful operation",
+ *     @OA\JsonContent(ref="#/components/schemas/User"),
+ * )
+ */
+```
+
+참조 사용
+---------
+클라이언트에서의 요청 및 응답 데이터가 겹치는 경우가 많다. 이런 경우 겹치는 데이터를 컴포넌트로 생성해두고 ```$ref```를 이용하여 재사용 하도록 할 수 있다.
+```php
+/**
+ * @OA\Schema(
+ *   schema="product_id",
+ *   type="integer",
+ *   format="int64",
+ *   description="The unique identifier of a product in our catalog"
+ * )
+ */
+```
+
+위 내용은 아래와 같이 ```yml```코드로 생성된다.
+```yml
+openapi: 3.0.0
+components:
+  schemas:
+    product_id:
+      description: "The unique identifier of a product in our catalog"
+      type: integer
+      format: int64
+```
+
+이렇게 생성된 컴포넌트는 아래와 같이 참조할 수 있다.
+```php
+/**
+ * @OA\Property(ref="#/components/schemas/product_id")
+ */
+public $id;
+```
+
+쿼리스티링에서 배열 파라메터
+--------------------------
+스타일 값에 따라 ```@OA\Parameter(in="query", name="param", ...)```는 ```path?param=123&param=abc``` 형태로 URL을 생성할 수 있다. 하지만 PHP에서는 정상적으로 동작하지 않는다. 해결책은 ```param```이라는 이름을 ```param[]```로 변경하여 ```path?param[]=123&param[]=abc```로 생성하도록 하는 것이다.
+
+공급자 확장
+----------
+사양에서는 "x-"로 시작하는 사용자 지정 속성을 허용합니다. 따라서 모든 swagger-php 주석에는 배열(맵)을 허용하고 "x-" 속성으로 펼쳐지는 x 속성이 있다.
+
+```php
+/**
+ * @OA\Info(
+ *   title="Example",
+ *   version="1.0.0",
+ *   x={
+ *     "some-name": "a-value",
+ *     "another": 2,
+ *     "complex-type": {
+ *       "supported":{
+ *         {"version": "1.0", "level": "baseapi"},
+ *         {"version": "2.1", "level": "fullapi"},
+ *       }
+ *     }
+ *   }
+ * )
+ */
+```
+
+위 내용은 아래와 같이 생성된다.
+```yml
+openapi: 3.0.0
+info:
+  title: Example
+  version: 1
+  x-some-name: a-value
+  x-another: 2
+  x-complex-type:
+    supported:
+      - version: "1.0"
+        level: baseapi
+      - version: "2.1"
+        level: fullapi
+```
+
+열거형
+-----
+PHP 8.1부터 두 가지 사례의 열거형을 지원한다.
+
+### 값에 따른 열거형
+열거형 문자열, 정수 또는 기타 기본 유형과 마찬가지로 열거형 목록의 값으로 사용될 수 있다
+
+#### 기본적인 열거형 예
+```php
+use OpenApi\Attributes as OAT;
+
+enum Suit
+{
+    case Hearts;
+    case Diamonds;
+    case Clubs;
+    case Spades;
+}
+
+class Model
+{
+    #[OAT\Property(enum: [Suit::Hearts, Suit::Diamonds])]
+    protected array $someSuits;
+}
+```
+
+위의 코드는 아래와 같이 생성된다.
+```yml
+openapi: 3.0.0
+components:
+  schemas:
+    Model:
+      properties:
+        someSuits:
+          type: array
+          enum:
+            - Hearts
+            - Diamonds
+      type: object
+```
+
+#### Backend 열거형
+Backend 열거형은 이름 대신 값이 이용된다.
+
+열거형 스키마
+------------
+열거형을 사용하는 간단한 방법은 열거형에 Schema 속성을 이용하여 컴포넌트를 생성하는 것이다. 이를 통해 사양의 다른 스키마처럼 참조할 수 있다.
+```php
+use OpenApi\Attributes as OAT;
+
+#[OAT\Schema()]
+enum Colour
+{
+    case GREEN;
+    case BLUE;
+    case RED;
+}
+
+#[OAT\Schema()]
+class Product
+{
+    #[OAT\Property()]
+    public Colour $colour;
+}
+```
+
+위 내용은 아래와 같이 생성된다.
+```yml
+openapi: 3.0.0
+components:
+  schemas:
+    Colour:
+      type: string
+      enum:
+        - GREEN
+        - BLUE
+        - RED
+    Product:
+      properties:
+        colour:
+          $ref: '#/components/schemas/Colour'
+      type: object
+```
+
+#### 지원되는 열거형
+지원되는 열거형에는 이름 또는 Backend 열거형의 값이 사용되는지 여부를 결정하는 두 가지 규칙이 있다.
+
+1. 스키마 유형이 지정되지 않으면 열거형 이름이 사용됩니다.
+2. 스키마 유형이 제공되고 유형과 일치하는 경우 열거형 지원 사용됩니다.
+
+#### 이름 사용 열거형
+```php
+#[OAT\Schema()]
+enum Colour: int
+{
+    case GREEN = 1;
+    case BLUE = 2;
+    case RED = 3;
+}
+
+#[OAT\Schema()]
+class Product
+{
+    #[OAT\Property()]
+    public Colour $colour;
+}
+```
+
+생성 결과
+```yml
+openapi: 3.0.0
+components:
+  schemas:
+    Colour:
+      type: string
+      enum:
+        - GREEN
+        - BLUE
+        - RED
+    Product:
+      properties:
+        colour:
+          $ref: '#/components/schemas/Colour'
+      type: object
+```
+
+값 사용 열거형
+```php
+use OpenApi\Attributes as OAT;
+
+#[OAT\Schema(type: 'integer')]
+enum Colour: int
+{
+    case GREEN = 1;
+    case BLUE = 2;
+    case RED = 3;
+}
+
+#[OAT\Schema()]
+class Product
+{
+    #[OAT\Property()]
+    public Colour $colour;
+}
+```
+
+위 내용은 아래와 같이 생성된다.
+```yml
+openapi: 3.0.0
+components:
+  schemas:
+    Colour:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+    Product:
+      properties:
+        colour:
+          $ref: '#/components/schemas/Colour'
+      type: object
+```
 
