@@ -393,4 +393,253 @@ mediaType="/"
 1. 단일 엔드포인트에는 동일한 response값을 가진 두 개의 응답이 포함된다.
 2. 선언된 전역 응답이 여러 개 있습니다. 동일한 response값을 가진 두 개 이상이 있다.
 
+콜백
+----
+API는 콜백에에 대한 지원을 포함한다. 그러나 이 내용 대부분은 수ㅜ동으로 설정해야 한다.
+```php
+/**
+ *     ...
+ * 
+ *     callbacks={
+ *         "onChange"={
+ *              "{$request.query.callbackUrl}"={
+ *                  "post": {
+ *                      "requestBody": @OA\RequestBody(
+ *                          description="subscription payload",
+ *                          @OA\MediaType(mediaType="application/json", @OA\Schema(
+ *                              @OA\Property(property="timestamp", type="string", format="date-time", description="time of change")
+ *                          ))
+ *                      )
+ *                  },
+ *                  "responses": {
+ *                      "202": {
+ *                          "description": "Your server implementation should return this HTTP status code if the data was received successfully"
+ *                      }
+ *                  }
+ *              }
+ *         }
+ *     }
+ * 
+ *     ...
+ * 
+ */
+```
 
+가상 모델
+---------
+일반적으로 모델은 ```@OA\Schema``` 어노테이션을 클래스에 추가하고, 클래스의 속성에 ```@OA\Property```를 추가한다.
+그러히잠 속성이 업더라도 ```@OA\Property```를 중첩하여 사용할 수 있다. 실재로는 빈 클래스만 있어도 가능하다.
+```php
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    properties: [
+        'name' => new OA\Property(property: 'name', type: 'string'),
+        'email' => new OA\Property(property: 'email', type: 'string'),
+    ]
+)]
+class User {}
+```
+
+참조 대신 클래스 이름을 유형으로 사용
+-----------------------------------
+일반적으로 스키마를 참조살 때 ```$ref```를 사용할 수 있다.
+```php
+#[OAT\Schema(schema: 'user')]
+class User
+{
+}
+
+#[OAT\Schema()]
+class Book
+{
+    /**
+     * @var User
+     */
+    #[OAT\Property(ref: '#/components/schemas/user')]
+    public $author;
+}
+```
+이것은 작동하지만 현리하지는 않다.
+1. 사용자 정의 스키마 (```schema: 'user'```)를 사용할 경우, 참조하는 모든 곳에서 이 이름을 사용해야 한다.
+2. ```ref: '#/compoments/schemas/user'```라고 기록하는 것은 지루하고, 오류 발생이 많다.
+
+속성을 사영하여 이렇게 변경하면 자체의 클래스 이름을 바탕으로 참조하는 PHP 자체 기능을 활용할 수 있다. 이전과 동일하게 ```User```를 사용하려면 속성을 아래와 같이 몇가지 다른 방식으로 작성할 수 있다.
+```php
+#[OAT\Property()]
+public User author;
+```
+
+또는 
+```php
+/**
+ * @var User
+ */
+#[OAT\Property()]
+public author;
+```
+
+또는
+```php
+#[OAT\Property(type: User::class)]
+public author;
+```
+
+열거형
+------
+PHP 8.1부터 열거형(```enum```)을 지원한다.
+```swagger-php```는 클래스 이름을 사용하여 스키마를 참조하는 것과 거의 동일한 방식으로 열거형을 지원한다.
+```php
+#[Schema()]
+enum State
+{
+    case OPEN;
+    case MERGED;
+    case DECLINED;
+}
+
+#[Schema()]
+class PullRequest {
+   #[OAT\Property()]
+   public State $state
+}
+```
+이렇게 하면 아래와 같이 YML로 출력된다.
+```yml
+components:
+  schemas:
+    PullRequest:
+      properties:
+        state:
+          $ref: '#/components/schemas/State'
+      type: object
+    State:
+      type: string
+      enum:
+        - OPEN
+        - MERGED
+        - DECLINED
+```
+
+다중 값 쿼리 매개변수 ``` $q[]=1&q[]=1```
+----------------------------------------
+PHP는 URL에 동일한 이름의 쿼리 파라미터에 복수의 값을 전달하기 위해 ```[]```를 사용하는 경우 배열을 이옹한다. 이렇게 하면 OpenAPI 측면에서 여러 값을 가진 단일 파라메터 변수로 간주될 수 있다.
+```php
+/**
+ * @OA\Get(
+ *     path="/api/endpoint",
+ *     description="The endpoint",
+ *     operationId="endpoint",
+ *     tags={"endpoints"},
+ *     @OA\Parameter(
+ *         name="things[]",
+ *         in="query",
+ *         description="A list of things.",
+ *         required=false,
+ *         @OA\Schema(
+ *             type="array",
+ *             @OA\Items(type="integer")
+ *         )
+ *     ),
+ *     @OA\Response(response="200", description="All good")
+ * )
+ */
+```
+
+결과는 다음과 같다.
+```yml
+      parameters:
+        -
+          name: 'things[]'
+          in: query
+          description: 'A list of things.'
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+```
+
+사용자 정의 응답 클래스
+----------------------
+참조를 사용하더라도 응답을 공유하는데 약간의 오버헤드가 있다. 이를 해결하는 한 가지 방법은 자신만의 응답 클래스를 작성하는 것이다. 장점은 사용자 지정 ```__construct()``` 방법을 통해 필요한 만큼 미리 체울 수 있다는 것이다.
+
+무엇보다 이 방법은 어노테이션과 속성 모두에 적용된다.
+```php
+use OpenApi\Attributes as OA;
+
+/**
+ * @Annotation
+ */
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+class BadRequest extends OA\Response
+{
+    public function __construct()
+    {
+        parent::__construct(response: 400, description: 'Bad request');
+    }
+}
+
+class Controller
+{
+
+    #[OA\Get(path: '/foo', responses: [new BadRequest()])]
+    public function get()
+    {
+    }
+
+    #[OA\Post(path: '/foo')]
+    #[BadRequest]
+    public function post()
+    {
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/foo",
+     *     @BadRequest()
+     * )
+     */
+    public function delete()
+    {
+    }
+}
+```
+
+> ### 주석만?
+> 어노테이션만으로 활용하려는 경우 ```#[Attribute......]``` 부분을 생략할 수 있다.
+> 또한 사용자 정의 어노테이션은 ```OpenApi\Annotations``` 네임스페이스에서 확장되어야 한다.
+
+클래스 상수에 주석 달기
+----------------------
+```php
+use OpenApi\Attributes as OA;
+
+#[OA\Schema()]
+class Airport
+{
+    #[OA\Property(property='kind')]
+    public const KIND = 'Airport';
+}
+```
+이 ```const``` 속성은 OpennApi 3.1.에서 지원한다.
+```yml
+components:
+  schemas:
+    Airport:
+        properties:
+          kind:
+            type: string
+            const: Airport
+```
+3.0.0의 경우 단일 값의 열거형으로 표시된다.
+```yml
+components:
+  schemas:
+    Airport:
+        properties:
+          kind:
+            type: string
+            enum: 
+              - Airport
+```
