@@ -19,7 +19,5 @@ class Controller {
      *     )
      * )
      */
-    public function base() : string {
-
-    }
+    public function base() : string {}
 }
