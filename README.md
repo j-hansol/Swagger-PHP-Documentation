@@ -479,7 +479,7 @@ components:
 public $id;
 ```
 
-쿼리스티링에서 배열 파라메터
+쿼리스트링에서 배열 파라메터
 --------------------------
 스타일 값에 따라 ```@OA\Parameter(in="query", name="param", ...)```는 ```path?param=123&param=abc``` 형태로 URL을 생성할 수 있다. 하지만 PHP에서는 정상적으로 동작하지 않는다. 해결책은 ```param```이라는 이름을 ```param[]```로 변경하여 ```path?param[]=123&param[]=abc```로 생성하도록 하는 것이다.
 
