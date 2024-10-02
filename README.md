@@ -1,4 +1,4 @@
-PHP Swagger 정리
+  PHP Swagger 정리
 ================
 
 * [시작하며](#시작하며)
@@ -138,7 +138,7 @@ echo $openapi->toYaml();
 public function users() { /* ... */ }
 ```
 
-정첩을 하지 안는 경우
+중첩을 하지 안는 경우
 ```php
 #[OA\Get(path: '/api/users')]
 #[OA\Response(response: 200, description: 'AOK')]
@@ -152,7 +152,7 @@ public function users() { /* ... */ }
 > 네임스페이스 별칭을 이용하여 입력하면 보다 단순하고, 가독성을 향상시킬 수 있다.
 > 모든 어노테이션은 ```OpenApi\Annotations```에 있다.
 
-어노테이션은 PHP 주석이므로 ```use OpenApi\Annotations as OA```라는 문장은 추가할 필요는 없다. 그러나 Doctrline 해당 어노테이션이 유효한지 아닌지 엄격히 구분한다.
+어노테이션은 PHP 주석이므로 ```use OpenApi\Annotations as OA```라는 문장은 추가할 필요는 없다. 그러나 Doctrline은 해당 어노테이션이 유효한지 아닌지 엄격히 구분한다.
 ```swagger-php```는 자동으로 ```@OA``` 라는 별칭을 자동으로 모든 어노테이션에 등록한다. 그래서 모든 어노테이션은 ```@OA``` 없이 이용가능하다.
 
 Doctrine
@@ -189,7 +189,7 @@ class MyController {
 ### 큰 따음표 표시
 
 > ### 큰따은표 표시
-> 출력 내용에 큰 따음표를 피시할 때 ```\``` eotls dusthdehls 연속으로 큰따음표를 입력하여 표시할 수 있다.
+> 출력 내용에 큰 따음표를 표시할 때 ```\``` eotls dusthdehls 연속으로 큰따음표를 입력하여 표시할 수 있다.
 > ```php
 > @OA\Schema(
 >    title="Request",
